@@ -11,8 +11,10 @@ package-mode = false
 python = "^3.11"
 pandas = "^2.2.2"
 pytest = "^7.0.0"
+pydantic = "^2.11.7"
+datetime = "^5.5"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
 flake8 = "^7.0"
 isort = "^5.13.2"
