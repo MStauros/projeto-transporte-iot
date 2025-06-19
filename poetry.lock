@@ -161,6 +161,38 @@ files = [
 colors = ["colorama (>=0.4.6)"]
 
 [[package]]
+name = "kafka"
+version = "1.3.5"
+description = "Pure Python client for Apache Kafka"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "kafka-1.3.5-py2.py3-none-any.whl", hash = "sha256:35a49e9a432f6792aad48b2ab09d03867357aaa06eacba2678b7fd0808156e5c"},
+    {file = "kafka-1.3.5.tar.gz", hash = "sha256:ffb3348cd918c31344b1a2eb61f692cbc423c83b1b06466a86de3db8a3f6a018"},
+]
+
+[[package]]
+name = "kafka-python"
+version = "2.2.12"
+description = "Pure Python client for Apache Kafka"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "kafka_python-2.2.12-py2.py3-none-any.whl", hash = "sha256:2817b81099bf2dc8905491d976362c151114e6d5f45817c4ec0c487b3cdc660f"},
+    {file = "kafka_python-2.2.12.tar.gz", hash = "sha256:bf73f7a74b596a34cfe4d22ffa53352fff0bd2b61acfa409235ed5da72a98bc1"},
+]
+
+[package.extras]
+benchmarks = ["pyperf"]
+crc32c = ["crc32c"]
+lz4 = ["lz4"]
+snappy = ["python-snappy"]
+testing = ["mock ; python_version < \"3.3\"", "pytest", "pytest-mock", "pytest-timeout"]
+zstd = ["zstandard"]
+
+[[package]]
 name = "mccabe"
 version = "0.7.0"
 description = "McCabe checker, plugin for flake8"
@@ -724,4 +756,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "1cde3891efef7b700b75215245c2b450e09e5868dfc269c4d6591c9b3732eee9"
+content-hash = "005d5c982846a0c8fd681fab2d54abc21196b7778c932752a871b1a381192132"
