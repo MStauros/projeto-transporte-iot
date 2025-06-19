@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Optional
 
 class Viagem(BaseModel):
     data_inicio: datetime
@@ -8,4 +9,4 @@ class Viagem(BaseModel):
     local_inicio: str
     local_fim: str
     distancia: float = Field(..., ge=0)
-    proposito: str = None
+    proposito: Optional[str] = None
