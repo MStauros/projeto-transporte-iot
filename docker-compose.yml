@@ -29,12 +29,17 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     networks:
       - kafka-network
+    healthcheck:
+      test: ["CMD-SHELL", "/usr/bin/kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   # PostgreSQL
   postgres:
     image: postgres:17
     container_name: postgres
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin123
@@ -43,6 +48,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d iot"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
     networks:
       - kafka-network
 
@@ -62,12 +72,36 @@ services:
     networks:
       - kafka-network
 
+  viagem-consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    environment:
+      # Herda automaticamente as variáveis do serviço postgres
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: iot
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - kafka-network
+    restart: unless-stopped
+    volumes:
+      - consumer_logs:/app/logs
 
 # Volumes para persistência de dados
 volumes:
   postgres_data:
     driver: local
   pgadmin_data:
+    driver: local
+  consumer_logs:
     driver: local
 
 # Rede para comunicação entre os containers

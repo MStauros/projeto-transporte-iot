@@ -2,8 +2,8 @@ from src.producer.sensor_simulator import gerar_viagens
 from src.producer.kafka_producer import ViagemKafkaProducer
 import time
 
-def run_simulador(n_iteracoes=10, intervalo=5):
-    producer = ViagemKafkaProducer(bootstrap_servers="localhost:9092", topic="viagens")
+def run_simulador(n_iteracoes=100, intervalo=5):
+    producer = ViagemKafkaProducer(bootstrap_servers="kafka:29092", topic="dados-viagem")
 
     for i in range(n_iteracoes):
         viagens = gerar_viagens(5)
