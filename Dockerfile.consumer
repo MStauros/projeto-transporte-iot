@@ -1,0 +1,33 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instala dependências do sistema
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc libpq-dev curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Instala Poetry
+ENV POETRY_VERSION=1.8.2
+RUN curl -sSL https://install.python-poetry.org | python3 - && \
+    ln -s /root/.local/bin/poetry /usr/local/bin/poetry
+
+# Desabilita criação de venv interna
+ENV POETRY_VIRTUALENVS_CREATE=false
+
+# Copia os arquivos de dependência
+COPY pyproject.toml poetry.lock ./
+
+# Instala dependências do projeto
+RUN poetry install --no-root
+
+# Copia o restante do projeto
+COPY . .
+
+# Define PYTHONPATH
+ENV PYTHONPATH=/app
+
+# Comando para rodar o script principal
+CMD ["python", "-u", "src/consumer/main.py"]
+
+RUN pip install psycopg2-binary
