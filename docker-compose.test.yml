@@ -92,7 +92,7 @@ services:
       postgres_test:
         condition: service_started 
       kafka_test:
-        condition: servicservice_started e_healthy
+        condition: service_started
     networks:
       - kafka-network_test
     restart: "no" # Para testes, geralmente queremos que ele rode e pare.
