@@ -29,7 +29,7 @@ isort = "^5.13.2"
 
 [tool.flake8]
 max-line-length = 150
-extend-ignore = "E203"
+extend-ignore = "E203,E501"
 
 [tool.black]
 line-length = 79
