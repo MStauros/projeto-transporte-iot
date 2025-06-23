@@ -57,12 +57,30 @@ jobs:
     - name: Build da Imagem Docker do Consumer
       run: docker build -f Dockerfile.consumer -t consumer-image:latest .
 
-    # --- Etapas Opcionais de Segurança (comentadas no seu arquivo) ---
-    # - name: Varredura de Segurança da Imagem do Producer com Trivy
-    # - name: Varredura de Segurança da Imagem do Consumer com Trivy
+    # --- Etapas de Captura de Logs para Depuração (NOVAS OU MODIFICADAS) ---
+    - name: Capturar Logs do Producer de Teste
+      if: always() # Garante que esta etapa rode sempre
+      run: docker compose -f docker-compose.test.yml -p github-actions-test-env logs viagem-producer_test
 
-    - name: Rodar Testes de Integração e E2E
-      run: docker-compose -f docker-compose.test.yml --project-name github-actions-test-env up --build --abort-on-container-exit --exit-code-from test-runner
+    - name: Capturar Logs do Consumer de Teste
+      if: always() # Garante que esta etapa rode sempre
+      run: docker compose -f docker-compose.test.yml -p github-actions-test-env logs viagem-consumer_test
+
+    - name: Capturar Logs do Kafka de Teste
+      if: always() # Garante que esta etapa rode sempre
+      run: docker compose -f docker-compose.test.yml -p github-actions-test-env logs kafka_test
+
+    - name: Capturar Logs do Zookeeper de Teste
+      if: always() # Garante que esta etapa rode sempre
+      run: docker compose -f docker-compose.test.yml -p github-actions-test-env logs zookeeper_test
+
+    - name: Capturar Logs do Postgres de Teste
+      if: always() # Garante que esta etapa rode sempre
+      run: docker compose -f docker-compose.test.yml -p github-actions-test-env logs postgres_test
+
+    - name: Parar e Remover Ambiente de Teste
+      if: always() # Garante que esta etapa rode sempre para limpar o ambiente
+      run: docker compose -f docker-compose.test.yml -p github-actions-test-env down -v --rmi all --remove-orphans
 
   # --- Etapas de CD (comentadas no seu arquivo) ---
   # publish-images:
