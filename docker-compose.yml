@@ -116,6 +116,26 @@ services:
     networks:
       - kafka-network
     restart: unless-stopped
+    
+  aggregator:
+      build:
+        context: .
+        dockerfile: Dockerfile.aggregator # Aponta para o novo Dockerfile
+      environment:
+        POSTGRES_HOST: postgres
+        POSTGRES_USER: admin
+        POSTGRES_PASSWORD: admin123
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: iot
+      depends_on:
+        postgres:
+          condition: service_healthy # O agregador precisa do PostgreSQL saudável
+      networks:
+        - kafka-network
+      restart: "no" # Isso é crucial: o agregador deve rodar uma vez e sair. Não queremos que ele reinicie em loop.
+      # Se você quiser que ele execute e saia, mas que o contêiner permaneça visível para logs, remova `--rm` do comando
+      # command: ["python", "-u", "src/data_aggregator/daily_aggregator.py"] # Este é o CMD padrão do Dockerfile
+
 
 # Volumes e Networks (sem alterações)
 volumes:

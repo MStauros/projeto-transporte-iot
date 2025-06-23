@@ -3,7 +3,7 @@
 import os
 import logging
 from datetime import datetime
-from sqlalchemy import create_engine, func, extract, Date as SQLDate
+from sqlalchemy import create_engine, func, case, and_
 from sqlalchemy.orm import sessionmaker
 from src.models.db_models import Base, ViagemDB, InfoCorridasDoDia
 
@@ -18,7 +18,6 @@ class DailyAggregator:
     def __init__(self, db_connection_url: str):
         self.db_connection_url = db_connection_url
         self.engine = create_engine(self.db_connection_url)
-        # Cria as tabelas se não existirem (incluindo info_corridas_do_dia)
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
         logger.info("Aggregator: Conexão com PostgreSQL configurada.")
@@ -32,23 +31,59 @@ class DailyAggregator:
         try:
             logger.info("Iniciando agregação diária de dados de viagens...")
 
-            # Subquery para agregar os dados de viagens por data
-            daily_stats = session.query(
-                func.date(ViagemDB.data_inicio).label('dt_refe'), # Extrai apenas a data
-                func.count(ViagemDB.id).label('qt_corr'),
-                func.sum(func.case((ViagemDB.categoria == 'Negócio', 1), else_=0)).label('qt_corr_neg'),
-                func.sum(func.case((ViagemDB.categoria == 'Pessoal', 1), else_=0)).label('qt_corr_pess'),
-                func.max(ViagemDB.distancia).label('vl_max_dist'),
-                func.min(ViagemDB.distancia).label('vl_min_dist'),
-                func.avg(ViagemDB.distancia).label('vl_avg_dist'),
-                func.sum(func.case((ViagemDB.proposito == 'Reunião', 1), else_=0)).label('qt_corr_reuni'),
-                func.sum(func.case((
-                    (ViagemDB.proposito != None) & (ViagemDB.proposito != 'Reunião'), 1), else_=0
-                )).label('qt_corr_nao_reuni')
-            ).group_by(func.date(ViagemDB.data_inicio)).all()
+            # --- CONSTRUÇÃO DA CONSULTA SQL MAIS MODULAR E EXPLÍCITA ---
+            # Definindo as colunas agregadas individualmente
+            dt_refe_col = func.date(ViagemDB.data_inicio).label('dt_refe')
+            qt_corr_col = func.count(ViagemDB.id).label('qt_corr')
+
+            # Contagens condicionais usando func.sum(case(...))
+            qt_corr_neg_col = func.sum(
+                case(
+                    (ViagemDB.categoria == 'Negócio', 1),
+                    else_=0
+                )
+            ).label('qt_corr_neg')
+
+            qt_corr_pess_col = func.sum(
+                case(
+                    (ViagemDB.categoria == 'Pessoal', 1),
+                    else_=0
+                )
+            ).label('qt_corr_pess')
+
+            vl_max_dist_col = func.max(ViagemDB.distancia).label('vl_max_dist')
+            vl_min_dist_col = func.min(ViagemDB.distancia).label('vl_min_dist')
+            vl_avg_dist_col = func.avg(ViagemDB.distancia).label('vl_avg_dist')
+
+            qt_corr_reuni_col = func.sum(
+                case(
+                    (ViagemDB.proposito == 'Reunião', 1),
+                    else_=0
+                )
+            ).label('qt_corr_reuni')
+
+            qt_corr_nao_reuni_col = func.sum(
+                case(
+                    (and_(ViagemDB.proposito != None, ViagemDB.proposito != 'Reunião'), 1),
+                    else_=0
+                )
+            ).label('qt_corr_nao_reuni')
+
+            # Combina todas as colunas para a consulta principal
+            daily_stats_query = session.query(
+                dt_refe_col,
+                qt_corr_col,
+                qt_corr_neg_col,
+                qt_corr_pess_col,
+                vl_max_dist_col,
+                vl_min_dist_col,
+                vl_avg_dist_col,
+                qt_corr_reuni_col,
+                qt_corr_nao_reuni_col
+            ).group_by(dt_refe_col).all() # Agrupa pela coluna de data_referencia
 
             # Processa os resultados e insere/atualiza na tabela info_corridas_do_dia
-            for row in daily_stats:
+            for row in daily_stats_query: # Iterar sobre o resultado da query
                 dt_refe = row.dt_refe
                 
                 # Tenta encontrar um registro existente para a data
