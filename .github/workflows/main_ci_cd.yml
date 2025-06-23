@@ -31,6 +31,9 @@ jobs:
         echo "$HOME/.local/bin" >> $GITHUB_PATH
         poetry --version
 
+    - name: Limpar cache do Poetry (para evitar instalações corrompidas)
+      run: poetry cache clear --all pypi
+
     - name: Instalar dependências com Poetry
       run: poetry install --no-root --no-interaction --no-ansi
 
@@ -44,6 +47,8 @@ jobs:
       run: poetry run isort --check-only .
 
     - name: Rodar Testes Unitários
+      env:
+        PYTHONPATH: ${{ github.workspace }}
       run: poetry run pytest tests/unit/
 
     - name: Build da Imagem Docker do Producer
