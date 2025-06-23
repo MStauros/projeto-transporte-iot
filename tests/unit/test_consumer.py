@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.consumer.data_processor2 import DataProcessor, ViagemDB
+from src.consumer.data_processor import DataProcessor, ViagemDB
 
 
 @pytest.fixture
