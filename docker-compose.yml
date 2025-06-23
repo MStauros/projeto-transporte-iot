@@ -10,13 +10,22 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - kafka-network
+    # ADICIONE ESTE BLOCO DE HEALTHCHECK
+    healthcheck:
+      test: ["CMD-SHELL", "echo stat | nc localhost 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s # Dê um tempo para o Zookeeper iniciar antes de começar a checar
+
 
   # Kafka Broker
   kafka:
     image: confluentinc/cp-kafka:7.3.0
     container_name: kafka
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     ports:
       - "9092:9092"
     environment:
@@ -35,7 +44,7 @@ services:
       timeout: 5s
       retries: 10
 
-  # PostgreSQL
+  # PostgreSQL (sem alterações neste trecho, mantendo o healthcheck existente)
   postgres:
     image: postgres:17
     container_name: postgres
@@ -56,28 +65,28 @@ services:
     networks:
       - kafka-network
 
-  # PGAdmin
+  # PGAdmin (sem alterações neste trecho)
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin123 
+      PGADMIN_DEFAULT_PASSWORD: admin123
     ports:
-      - "5050:80"  # Acessível em http://localhost:5050
+      - "5050:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmi
     networks:
       - kafka-network
 
-  viagem-consumer:
+  viagem-consumer: # (sem alterações neste trecho)
     build:
       context: .
       dockerfile: Dockerfile.consumer
     environment:
-      # Herda automaticamente as variáveis do serviço postgres
       POSTGRES_HOST: postgres
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin123
@@ -88,14 +97,27 @@ services:
       postgres:
         condition: service_healthy
       kafka:
-        condition: service_started
+        condition: service_healthy
     networks:
       - kafka-network
     restart: unless-stopped
     volumes:
       - consumer_logs:/app/logs
 
-# Volumes para persistência de dados
+  viagem-producer: # (sem alterações neste trecho)
+    build:
+      context: .
+      dockerfile: Dockerfile.producer
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - kafka-network
+    restart: unless-stopped
+
+# Volumes e Networks (sem alterações)
 volumes:
   postgres_data:
     driver: local
@@ -104,7 +126,6 @@ volumes:
   consumer_logs:
     driver: local
 
-# Rede para comunicação entre os containers
 networks:
   kafka-network:
     driver: bridge
