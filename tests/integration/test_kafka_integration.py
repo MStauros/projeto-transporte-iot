@@ -7,9 +7,7 @@ from kafka import KafkaConsumer, KafkaProducer
 from sqlalchemy import create_engine, text
 
 # Configurações do Kafka e PostgreSQL para o ambiente de teste
-KAFKA_BOOTSTRAP_SERVERS = os.getenv(
-    "KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"
-)
+KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "admin")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "admin123")
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
@@ -51,14 +49,10 @@ def db_engine():
             print("Conexão com o banco de dados estabelecida.")
             break
         except Exception as e:
-            print(
-                f"Tentativa {i+1}/{max_retries}: Conexão com o banco de dados falhou: {e}"
-            )
+            print(f"Tentativa {i+1}/{max_retries}: Conexão com o banco de dados falhou: {e}")
             time.sleep(2)
     else:
-        raise Exception(
-            "Não foi possível conectar ao banco de dados após várias tentativas."
-        )
+        raise Exception("Não foi possível conectar ao banco de dados após várias tentativas.")
 
     # Limpa a tabela antes dos testes
     with engine.connect() as connection:
@@ -114,9 +108,7 @@ def test_kafka_producer_sends_message(kafka_producer, kafka_consumer):
     assert test_dict in messages
 
 
-def test_consumer_processes_message_and_stores_in_db(
-    kafka_producer, db_engine
-):
+def test_consumer_processes_message_and_stores_in_db(kafka_producer, db_engine):
     # Simula o envio de uma mensagem pelo produtor
     test_data = {
         "data_inicio": "2025-01-01T10:00:00",

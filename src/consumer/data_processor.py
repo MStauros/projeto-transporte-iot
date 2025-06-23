@@ -42,18 +42,10 @@ class DataProcessor:
         try:
             self.consumer = Consumer(
                 {
-                    "bootstrap.servers": self.kafka_config[
-                        "bootstrap.servers"
-                    ],
-                    "group.id": self.kafka_config.get(
-                        "group.id", "viagem-group"
-                    ),
-                    "auto.offset.reset": self.kafka_config.get(
-                        "auto.offset.reset", "earliest"
-                    ),
-                    "enable.auto.commit": self.kafka_config.get(
-                        "enable.auto.commit", False
-                    ),
+                    "bootstrap.servers": self.kafka_config["bootstrap.servers"],
+                    "group.id": self.kafka_config.get("group.id", "viagem-group"),
+                    "auto.offset.reset": self.kafka_config.get("auto.offset.reset", "earliest"),
+                    "enable.auto.commit": self.kafka_config.get("enable.auto.commit", False),
                 }
             )
             self.logger.info(
@@ -85,9 +77,7 @@ class DataProcessor:
                 "DISTANCIA",
             ]
             if not all(field in msg_value for field in required_fields):
-                raise ValueError(
-                    "Mensagem incompleta - campos obrigatórios faltando"
-                )
+                raise ValueError("Mensagem incompleta - campos obrigatórios faltando")
 
             # Conversão de tipos
             data_inicio = self._parse_datetime(msg_value["DATA_INICIO"])
@@ -151,9 +141,7 @@ class DataProcessor:
                     processed_data = self.process_message(payload)
                     self.save_to_db(processed_data)
                     self.consumer.commit(asynchronous=False)
-                    self.logger.info(
-                        "Mensagem processada - Offset: %d", msg.offset()
-                    )
+                    self.logger.info("Mensagem processada - Offset: %d", msg.offset())
 
                 except Exception as e:
                     self.logger.error(

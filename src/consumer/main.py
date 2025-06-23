@@ -24,18 +24,11 @@ logger = logging.getLogger("MainConsumer")
 
 def main():
     kafka_config = {
-        "bootstrap.servers": os.getenv(
-            "KAFKA_BOOTSTRAP_SERVERS", "kafka:29092"
-        ),
+        "bootstrap.servers": os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092"),
         "group.id": os.getenv("KAFKA_GROUP_ID", "viagem-consumer-group"),
     }
 
-    db_connection_url = (
-        f"postgresql://"
-        f"{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@"
-        f"{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/"
-        f"{os.getenv('POSTGRES_DB')}"
-    )
+    db_connection_url = f"postgresql://" f"{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@" f"{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/" f"{os.getenv('POSTGRES_DB')}"
     print(f"DEBUG: DB Connection URL: {db_connection_url}")
 
     processor = DataProcessor(kafka_config, db_connection_url)
