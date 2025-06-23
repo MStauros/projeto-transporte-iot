@@ -3,10 +3,9 @@ from typing import Any, Dict
 
 
 class DBConfig:
-    """Configuração que lê do Docker Compose ou .env"""
+    """Gerencia as configurações de conexão com o banco de dados PostgreSQL."""
 
     def __init__(self):
-        # Valores padrão para desenvolvimento local
         default_config = {
             "user": "postgres",
             "password": "postgres",
@@ -15,7 +14,6 @@ class DBConfig:
             "database": "viagens_db",
         }
 
-        # Tenta ler do Docker Compose (quando rodando dentro do container)
         self.user = os.getenv("POSTGRES_USER", default_config["user"])
         self.password = os.getenv("POSTGRES_PASSWORD", default_config["password"])
         self.host = os.getenv("POSTGRES_HOST", "postgres")  # Nome do serviço no compose

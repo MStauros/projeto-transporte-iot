@@ -1,5 +1,3 @@
-# src/data_aggregator/daily_aggregator.py
-
 import logging
 import os
 
@@ -32,13 +30,10 @@ class DailyAggregator:
         session = self.Session()
         try:
             logger.info("Iniciando agregação diária de dados de viagens...")
-
-            # --- CONSTRUÇÃO DA CONSULTA SQL MAIS MODULAR E EXPLÍCITA ---
-            # Definindo as colunas agregadas individualmente
+            # Construção da consulta SQL mais modular e explícit
             dt_refe_col = func.date(ViagemDB.data_inicio).label("dt_refe")
             qt_corr_col = func.count(ViagemDB.id).label("qt_corr")
 
-            # Contagens condicionais usando func.sum(case(...))
             qt_corr_neg_col = func.sum(case((ViagemDB.categoria == "Negócio", 1), else_=0)).label("qt_corr_neg")
 
             qt_corr_pess_col = func.sum(case((ViagemDB.categoria == "Pessoal", 1), else_=0)).label("qt_corr_pess")
@@ -62,7 +57,6 @@ class DailyAggregator:
                 )
             ).label("qt_corr_nao_reuni")
 
-            # Combina todas as colunas para a consulta principal
             daily_stats_query = (
                 session.query(
                     dt_refe_col,
@@ -77,17 +71,15 @@ class DailyAggregator:
                 )
                 .group_by(dt_refe_col)
                 .all()
-            )  # Agrupa pela coluna de data_referencia
+            )
 
             # Processa os resultados e insere/atualiza na tabela info_corridas_do_dia
-            for row in daily_stats_query:  # Iterar sobre o resultado da query
+            for row in daily_stats_query:
                 dt_refe = row.dt_refe
 
-                # Tenta encontrar um registro existente para a data
                 existing_entry = session.query(InfoCorridasDoDia).filter_by(dt_refe=dt_refe).first()
 
                 if existing_entry:
-                    # Atualiza o registro existente
                     existing_entry.qt_corr = row.qt_corr
                     existing_entry.qt_corr_neg = row.qt_corr_neg
                     existing_entry.qt_corr_pess = row.qt_corr_pess
@@ -98,7 +90,6 @@ class DailyAggregator:
                     existing_entry.qt_corr_nao_reuni = row.qt_corr_nao_reuni
                     logger.debug(f"Atualizado InfoCorridasDoDia para {dt_refe}")
                 else:
-                    # Cria um novo registro
                     new_entry = InfoCorridasDoDia(
                         dt_refe=dt_refe,
                         qt_corr=row.qt_corr,
@@ -124,9 +115,7 @@ class DailyAggregator:
             session.close()
 
 
-# Exemplo de como rodar o agregador (pode ser usado em um script principal separado)
 if __name__ == "__main__":
-    # Carregar variáveis de ambiente para a URL do DB
     from dotenv import load_dotenv
 
     load_dotenv()

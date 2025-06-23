@@ -1,5 +1,3 @@
-# tests/unit/test_producer.py
-
 from src.producer.kafka_producer import ViagemKafkaProducer
 from src.producer.sensor_simulator import gerar_viagens
 
@@ -9,7 +7,7 @@ class MockKafkaProducer:
         self.sent = []
 
     def send(self, topic, value):
-        # Aqui, value JÁ É o dicionário formatado (payload)
+        # Mock simula o envio do valor direto, sem serialização para bytes
         self.sent.append((topic, value))
         return True
 
@@ -18,6 +16,7 @@ class MockKafkaProducer:
 
 
 def test_simulador_envia_viagem(monkeypatch):
+    # Mock KafkaProducer para não precisar de Kafka real
     monkeypatch.setattr("src.producer.kafka_producer.KafkaProducer", MockKafkaProducer)
 
     producer = ViagemKafkaProducer(bootstrap_servers="mock:9092", topic="viagens")
@@ -29,7 +28,6 @@ def test_simulador_envia_viagem(monkeypatch):
 
     assert len(producer.producer.sent) == 1
 
-    # dados_enviados JÁ É O DICIONÁRIO SALVO PELO MOCK
     dados_enviados = producer.producer.sent[0][1]
 
     print(f"\nDEBUG: Conteúdo de dados_enviados no teste: {dados_enviados}")

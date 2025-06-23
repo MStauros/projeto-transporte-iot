@@ -40,7 +40,6 @@ def db_engine():
     db_url = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
     engine = create_engine(db_url)
 
-    # Espera o banco de dados estar pronto
     max_retries = 10
     for i in range(max_retries):
         try:
@@ -54,7 +53,6 @@ def db_engine():
     else:
         raise Exception("Não foi possível conectar ao banco de dados após várias tentativas.")
 
-    # Limpa a tabela antes dos testes
     with engine.connect() as connection:
         connection.execute(text("DROP TABLE IF EXISTS viagens"))
         connection.execute(
@@ -69,18 +67,17 @@ def db_engine():
                 local_fim VARCHAR(255),
                 distancia FLOAT,
                 proposito VARCHAR(255)
-            )
-        """
+            )"""
             )
         )
     yield engine
-    # Limpa a tabela após os testes
+
     with engine.connect() as connection:
         connection.execute(text("DROP TABLE IF EXISTS viagens"))
 
 
-# Função utilitária para espera ativa no banco de dados
 def wait_for_db_entry(engine, query, max_wait=10):
+    """Função utilitária para espera ativa por uma entrada no banco de dados."""
     for _ in range(max_wait):
         with engine.connect() as conn:
             result = conn.execute(text(query)).fetchall()
@@ -91,25 +88,25 @@ def wait_for_db_entry(engine, query, max_wait=10):
 
 
 def test_kafka_producer_sends_message(kafka_producer, kafka_consumer):
+    """Testa se o produtor envia uma mensagem e o consumidor a recebe do Kafka."""
     test_dict = {"key": "test_producer", "value": "test_message"}
     test_message = json.dumps(test_dict).encode("utf-8")
     kafka_producer.send("dados-viagem", test_message)
     kafka_producer.flush()
 
-    # Espera a mensagem ser entregue
-    time.sleep(2)
+    time.sleep(2)  # Espera a mensagem ser entregue
 
     messages = []
     for message in kafka_consumer:
         decoded = json.loads(message.value.decode("utf-8"))
         messages.append(decoded)
-        break  # Pega apenas uma mensagem
+        break
 
     assert test_dict in messages
 
 
 def test_consumer_processes_message_and_stores_in_db(kafka_producer, db_engine):
-    # Simula o envio de uma mensagem pelo produtor
+    """Testa o fluxo completo: produtor envia, consumidor processa e salva no DB."""
     test_data = {
         "data_inicio": "2025-01-01T10:00:00",
         "data_fim": "2025-01-01T12:00:00",
@@ -123,7 +120,6 @@ def test_consumer_processes_message_and_stores_in_db(kafka_producer, db_engine):
     kafka_producer.send("dados-viagem", test_message)
     kafka_producer.flush()
 
-    # Espera o consumidor processar a mensagem
     query = "SELECT * FROM viagens WHERE local_inicio = 'Origem Teste'"
     result = wait_for_db_entry(db_engine, query)
 

@@ -34,11 +34,13 @@ categorias_viagem = list(propositos_por_categorias)
 
 
 def gerar_cidade():
+    """Gera um nome de cidade fictícia."""
     cidade = fake.city()
     return f"{cidade}"
 
 
 def gerar_viagem() -> Viagem:
+    """Gera um objeto Viagem com dados aleatórios."""
     data_inicio = fake.date_time_between(start_date="-1y", end_date="now")
     duracao = timedelta(hours=random.randint(1, 24), days=random.randint(0, 14))
     data_fim = data_inicio + duracao
@@ -63,4 +65,5 @@ def gerar_viagem() -> Viagem:
 
 
 def gerar_viagens(quantidade: int) -> List[Viagem]:
+    """Gera uma lista de objetos Viagem."""
     return [gerar_viagem() for _ in range(quantidade)]

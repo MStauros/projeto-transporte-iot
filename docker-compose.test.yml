@@ -1,41 +1,41 @@
 # docker-compose.test.yml
-# Este arquivo define um ambiente Docker isolado para rodar testes de integração e E2E.
+# Define um ambiente Docker isolado para rodar testes de integração.
 
 services:
-  # O serviço principal que orquestra e executa os testes Pytest
+  # test-runner - Orquestra e executa os testes Pytest
   test-runner:
     build:
       context: .
-      dockerfile: Dockerfile.test # O Dockerfile para o ambiente de testes
+      dockerfile: Dockerfile.test
     depends_on:
-      kafka_test: # Depende da instância de Kafka para teste
+      kafka_test: # Sem healthcheck no ambiente de teste, espera apenas o início
         condition: service_started 
-      postgres_test: # Depende da instância de PostgreSQL para teste
+      postgres_test: # Sem healthcheck no ambiente de teste, espera apenas o início
         condition: service_started 
       viagem-consumer_test:
         condition: service_started
       viagem-producer_test:
         condition: service_started
-    environment: # Variáveis de ambiente que os testes usarão para se conectar aos serviços de teste
+    environment: # Variáveis de ambiente que os testes usarão
       KAFKA_BOOTSTRAP_SERVERS: kafka_test:29092
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin123
       POSTGRES_HOST: postgres_test
       POSTGRES_PORT: 5432
       POSTGRES_DB: iot
-    volumes: # Monta o código do projeto para que o test-runner possa acessá-lo
+    volumes: # Monta o código para acesso pelos testes
       - ./tests:/app/tests
       - ./src:/app/src
       - ./config:/app/config
-    # Comando que o test-runner executará: espera pelos serviços e roda o pytest
+    # Comando: espera pelos serviços com wait-for-it.sh e roda o pytest para testes de integração
     command: >
       sh -c "/usr/bin/wait-for-it.sh kafka_test:29092 --timeout=60 --strict -- \
       /usr/bin/wait-for-it.sh postgres_test:5432 --timeout=60 --strict -- \
       pytest /app/tests/integration/test_kafka_integration.py"
     networks:
-      - kafka-network_test # Conecta-se à rede de teste
+      - kafka-network_test
 
-  # Serviço ZooKeeper para o ambiente de teste
+  # zookeeper_test - ZooKeeper para o ambiente de teste
   zookeeper_test:
     image: confluentinc/cp-zookeeper:7.3.0
     container_name: zookeeper_test
@@ -46,7 +46,7 @@ services:
       - kafka-network_test
 
 
-  # Serviço Kafka Broker para o ambiente de teste
+  # kafka_test - Kafka Broker para o ambiente de teste
   kafka_test:
     image: confluentinc/cp-kafka:7.3.0
     container_name: kafka_test
@@ -57,14 +57,14 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper_test:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka_test:29092 # Dentro da rede de teste
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka_test:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     networks:
       - kafka-network_test
 
-  # Serviço PostgreSQL para o ambiente de teste
+  # postgres_test - PostgreSQL para o ambiente de teste
   postgres_test:
     image: postgres:17
     container_name: postgres_test
@@ -76,7 +76,7 @@ services:
       - kafka-network_test
 
 
-  # Serviço Consumer para o ambiente de teste (se necessário para testes E2E)
+  # viagem-consumer_test - Consumer para o ambiente de teste
   viagem-consumer_test:
     build:
       context: .
@@ -95,9 +95,9 @@ services:
         condition: service_started
     networks:
       - kafka-network_test
-    restart: "no" # Para testes, geralmente queremos que ele rode e pare.
+    restart: "no"
 
-  # Serviço Producer para o ambiente de teste (se necessário para testes E2E)
+  # viagem-producer_test - Producer para o ambiente de teste
   viagem-producer_test:
     build:
       context: .
@@ -109,7 +109,7 @@ services:
         condition: service_started 
     networks:
       - kafka-network_test
-    restart: "no" # Para testes, geralmente queremos que ele rode e pare.
+    restart: "no"
 
 # Definição da rede exclusiva para o ambiente de teste
 networks:

@@ -18,7 +18,7 @@ def mock_db_session():
 
 
 def test_process_valid_message(sample_valid_message):
-    # Forneça um kafka_config válido, mesmo que mockado, para evitar KeyError
+    # Fornece um kafka_config válido para a inicialização do DataProcessor nos testes
     processor = DataProcessor({"bootstrap.servers": "mock_kafka:9092"}, "sqlite:///:memory:")
     result = processor.process_message(sample_valid_message)
 
@@ -29,16 +29,16 @@ def test_process_valid_message(sample_valid_message):
 
 
 def test_process_invalid_message():
-    # Forneça um kafka_config válido, mesmo que mockado, para evitar KeyError
+    # Fornece um kafka_config válido para a inicialização do DataProcessor nos testes
     processor = DataProcessor({"bootstrap.servers": "mock_kafka:9092"}, "sqlite:///:memory:")
-    invalid_msg = {"DATA_INICIO": "06-15-2023 14"}  # Mensagem incompleta
+    invalid_msg = {"DATA_INICIO": "06-15-2023 14"}
 
     with pytest.raises(ValueError):
         processor.process_message(invalid_msg)
 
 
 def test_store_data(mock_db_session):
-    # Forneça um kafka_config válido, mesmo que mockado, para evitar KeyError
+    # Fornece um kafka_config válido para a inicialização do DataProcessor nos testes
     processor = DataProcessor({"bootstrap.servers": "mock_kafka:9092"}, "sqlite:///:memory:")
     processor.Session = MagicMock(return_value=mock_db_session)
 

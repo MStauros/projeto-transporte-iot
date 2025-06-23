@@ -1,5 +1,5 @@
 services:
-  # ZooKeeper
+  # ZooKeeper - Serviço de coordenação para Kafka
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.0
     container_name: zookeeper
@@ -10,16 +10,15 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - kafka-network
-    # ADICIONE ESTE BLOCO DE HEALTHCHECK
     healthcheck:
       test: ["CMD-SHELL", "echo stat | nc localhost 2181"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s # Dê um tempo para o Zookeeper iniciar antes de começar a checar
+      start_period: 10s
 
 
-  # Kafka Broker
+  # Kafka Broker - Plataforma de streaming de eventos
   kafka:
     image: confluentinc/cp-kafka:7.3.0
     container_name: kafka
@@ -44,7 +43,7 @@ services:
       timeout: 5s
       retries: 10
 
-  # PostgreSQL (sem alterações neste trecho, mantendo o healthcheck existente)
+  # PostgreSQL - Banco de dados relacional para persistência de dados
   postgres:
     image: postgres:17
     container_name: postgres
@@ -65,7 +64,7 @@ services:
     networks:
       - kafka-network
 
-  # PGAdmin (sem alterações neste trecho)
+  # PGAdmin - Interface web para gerenciamento do PostgreSQL
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
@@ -82,7 +81,8 @@ services:
     networks:
       - kafka-network
 
-  viagem-consumer: # (sem alterações neste trecho)
+  # Viagem Consumer - Consome dados do Kafka e persiste no PostgreSQL
+  viagem-consumer:
     build:
       context: .
       dockerfile: Dockerfile.consumer
@@ -104,7 +104,8 @@ services:
     volumes:
       - consumer_logs:/app/logs
 
-  viagem-producer: # (sem alterações neste trecho)
+  # Viagem Producer - Simula a geração e envio de dados para Kafka
+  viagem-producer:
     build:
       context: .
       dockerfile: Dockerfile.producer
@@ -117,10 +118,11 @@ services:
       - kafka-network
     restart: unless-stopped
     
+  # Aggregator - Serviço para agregação diária de dados
   aggregator:
       build:
         context: .
-        dockerfile: Dockerfile.aggregator # Aponta para o novo Dockerfile
+        dockerfile: Dockerfile.aggregator 
       environment:
         POSTGRES_HOST: postgres
         POSTGRES_USER: admin
@@ -129,15 +131,13 @@ services:
         POSTGRES_DB: iot
       depends_on:
         postgres:
-          condition: service_healthy # O agregador precisa do PostgreSQL saudável
+          condition: service_healthy  saudável
       networks:
         - kafka-network
-      restart: "no" # Isso é crucial: o agregador deve rodar uma vez e sair. Não queremos que ele reinicie em loop.
-      # Se você quiser que ele execute e saia, mas que o contêiner permaneça visível para logs, remova `--rm` do comando
-      # command: ["python", "-u", "src/data_aggregator/daily_aggregator.py"] # Este é o CMD padrão do Dockerfile
+      restart: "no" # O agregador é um job pontual, não deve reiniciar automaticamente.
 
 
-# Volumes e Networks (sem alterações)
+# Volumes para persistência de dados do PostgreSQL e PGAdmin
 volumes:
   postgres_data:
     driver: local
@@ -146,6 +146,7 @@ volumes:
   consumer_logs:
     driver: local
 
+# Rede Docker para comunicação interna entre os serviços
 networks:
   kafka-network:
     driver: bridge

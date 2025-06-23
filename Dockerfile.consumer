@@ -2,39 +2,28 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Instalação de dependências do sistema
-# gcc, libpq-dev são para psycopg2-binary
-# curl é para instalar o poetry
-# netcat-openbsd, iputils-ping são para ferramentas de depuração e healthchecks
+# Instala dependências do sistema para psycopg2-binary e ferramentas de rede
 RUN apt-get update && \
     apt-get install -y --no-install-recommends gcc libpq-dev curl netcat-openbsd iputils-ping && \
     rm -rf /var/lib/apt/lists/*
 
-# Instalação do Poetry
+# Instala Poetry e o adiciona ao PATH
 ENV POETRY_VERSION=1.8.2
-# Instala o Poetry usando o script oficial
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
-    # Adiciona o diretório de executáveis do Poetry ao PATH para que `poetry` seja acessível
     ln -s /root/.local/bin/poetry /usr/local/bin/poetry
 
-# Desabilita a criação de ambientes virtuais pelo Poetry dentro do container
+# Desabilita criação de venv interna pelo Poetry
 ENV POETRY_VIRTUALENVS_CREATE=false
 
-# Copia os arquivos de gerenciamento de dependências primeiro para aproveitar o cache do Docker
-# Se pyproject.toml ou poetry.lock mudarem, esta camada e as subsequentes serão reconstruídas.
+# Copia e instala as dependências do projeto usando o cache do Docker
 COPY pyproject.toml poetry.lock ./
-
-# Instala as dependências do projeto definidas no poetry.lock
-# --no-root: não instala o próprio pacote se for definido (bom para aplicações simples que não são bibliotecas)
-# --no-interaction --no-ansi: para ambientes não interativos (CI/CD)
 RUN poetry install --no-root --no-interaction --no-ansi
 
 # Copia o restante do código da aplicação
 COPY . .
 
-# Define PYTHONPATH para que o Python encontre os módulos do seu projeto
+# Define PYTHONPATH para que Python encontre os módulos do projeto
 ENV PYTHONPATH=/app
 
-# Comando que será executado quando o contêiner iniciar
-# -u: força a saída padrão e de erro para serem não armazenadas em buffer, útil para ver logs em tempo real
+# Comando para rodar o script principal do consumidor
 CMD ["python", "-u", "src/consumer/main.py"]

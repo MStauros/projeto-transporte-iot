@@ -1,12 +1,10 @@
-# src/models/sensor_data.py (Sem alterações)
-
 from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field
 
 
-class Viagem(BaseModel):  # Este é o modelo Pydantic
+class Viagem(BaseModel):
     data_inicio: datetime
     data_fim: datetime
     categoria: str

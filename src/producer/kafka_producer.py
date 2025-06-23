@@ -14,7 +14,7 @@ class ViagemKafkaProducer:
         self.topic = topic
 
     def viagem_to_payload(self, viagem: Viagem) -> dict:
-        """Formata os dados para o padrão esperado pelo consumer"""
+        """Formata os dados do objeto Viagem para o payload esperado pelo consumidor."""
         return {
             "DATA_INICIO": viagem.data_inicio.strftime("%m-%d-%Y %H"),
             "DATA_FIM": viagem.data_fim.strftime("%m-%d-%Y %H"),
@@ -26,7 +26,6 @@ class ViagemKafkaProducer:
         }
 
     def enviar_viagem(self, viagem: Viagem):
-        # Use a função viagem_to_payload para formatar a mensagem
         payload = self.viagem_to_payload(viagem)
-        self.producer.send(self.topic, payload)  # Envia o payload formatado
+        self.producer.send(self.topic, payload)
         self.producer.flush()

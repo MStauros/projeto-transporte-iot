@@ -26,9 +26,8 @@ class DataProcessor:
         self.setup_kafka()
 
     def setup_db(self):
-        """Configura a conexão com o banco de dados"""
+        """Configura a conexão com o banco de dados e cria as tabelas."""
         try:
-            # Usar db_connection_url diretamente, que já vem do main.py com as variáveis de ambiente
             self.engine = create_engine(self.db_connection_url)
             Base.metadata.create_all(self.engine)
             self.Session = sessionmaker(bind=self.engine)
@@ -57,7 +56,7 @@ class DataProcessor:
             raise
 
     def _parse_datetime(self, dt_str: str) -> datetime:
-        """Converte string no formato mm-dd-yyyy HH para datetime"""
+        """Converte string no formato 'mm-dd-yyyy HH' para objeto datetime."""
         try:
             return datetime.strptime(dt_str, "%m-%d-%Y %H")
         except ValueError as e:
@@ -65,9 +64,8 @@ class DataProcessor:
             raise
 
     def process_message(self, msg_value: dict) -> ViagemDB:
-        """Processa e valida uma mensagem Kafka"""
+        """Processa e valida uma mensagem Kafka, retornando um objeto ViagemDB."""
         try:
-            # Validação básica dos campos obrigatórios
             required_fields = [
                 "DATA_INICIO",
                 "DATA_FIM",
@@ -79,12 +77,10 @@ class DataProcessor:
             if not all(field in msg_value for field in required_fields):
                 raise ValueError("Mensagem incompleta - campos obrigatórios faltando")
 
-            # Conversão de tipos
             data_inicio = self._parse_datetime(msg_value["DATA_INICIO"])
             data_fim = self._parse_datetime(msg_value["DATA_FIM"])
             distancia = float(msg_value["DISTANCIA"])
 
-            # Validações de negócio
             if distancia < 0:
                 raise ValueError("Distância não pode ser negativa")
             if data_fim < data_inicio:
@@ -149,8 +145,7 @@ class DataProcessor:
                         msg.offset(),
                         str(e),
                     )
-                    # Não relança o erro aqui para não parar o consumer por uma única mensagem inválida
-                    # O commit não é feito para esta mensagem, permitindo reprocessamento ou tratamento posterior
+                    # Não realiza commit para a mensagem com erro, permitindo reprocessamento.
                     continue
 
         except KeyboardInterrupt:

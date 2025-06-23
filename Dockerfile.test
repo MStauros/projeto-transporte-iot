@@ -2,18 +2,16 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Instala dependências do sistema
-# wait-for-it.sh precisa de netcat
-# libpq-dev para psycopg2-binary
+# Instala dependências do sistema para psycopg2-binary e ferramentas de rede
 RUN apt-get update && \
     apt-get install -y --no-install-recommends gcc libpq-dev curl netcat-openbsd iputils-ping && \
     rm -rf /var/lib/apt/lists/*
 
-# Instala wait-for-it.sh
+# Instala wait-for-it.sh para espera de serviços
 RUN curl -sSL https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -o /usr/bin/wait-for-it.sh && \
     chmod +x /usr/bin/wait-for-it.sh
 
-# Instala Poetry
+# Instala Poetry e o adiciona ao PATH
 ENV POETRY_VERSION=1.8.2
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     ln -s /root/.local/bin/poetry /usr/local/bin/poetry
@@ -21,12 +19,6 @@ RUN curl -sSL https://install.python-poetry.org | python3 - && \
 # Desabilita criação de venv interna pelo Poetry
 ENV POETRY_VIRTUALENVS_CREATE=false
 
-# Copia os arquivos de dependência do Poetry
+# Copia e instala todas as dependências do projeto, incluindo as de desenvolvimento
 COPY pyproject.toml poetry.lock ./
-
-# Instala todas as dependências do projeto, incluindo as de desenvolvimento
 RUN poetry install --no-root --no-interaction --no-ansi
-
-# Este Dockerfile não precisa copiar todo o código do projeto,
-# pois o `docker-compose.test.yml` irá montar os volumes `/app/tests`, `/app/src`, etc.
-# COPY . . # Removido, pois os volumes serão montados

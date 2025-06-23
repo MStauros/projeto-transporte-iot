@@ -5,16 +5,15 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Adiciona o diretório raiz ao sys.path para permitir imports relativos
+# Adiciona o diretório raiz ao sys.path para permitir imports relativos em ambientes como Docker
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 
 from src.consumer.data_processor import DataProcessor  # noqa: E402
 
-# Carrega variáveis de ambiente do .env
 load_dotenv()
 
-# Configuração de logging
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",

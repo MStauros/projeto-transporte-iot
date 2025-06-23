@@ -1,32 +1,28 @@
-# Dockerfile.aggregator
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Instala dependências do sistema necessárias para psycopg2-binary
+# Instala dependências do sistema para psycopg2-binary e Poetry
 RUN apt-get update && \
     apt-get install -y --no-install-recommends gcc libpq-dev curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Instala Poetry
 ENV POETRY_VERSION=1.8.2
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     ln -s /root/.local/bin/poetry /usr/local/bin/poetry
 
-# Desabilita criação de venv interna
+# Desabilita criação de venv interna pelo Poetry
 ENV POETRY_VIRTUALENVS_CREATE=false
 
-# Copia os arquivos de dependência do Poetry
+# Copia e instala as dependências do projeto usando o cache do Docker
 COPY pyproject.toml poetry.lock ./
-
-# Instala dependências do projeto
 RUN poetry install --no-root --no-interaction --no-ansi
 
-# Copia o restante do projeto
+# Copia o restante do código da aplicação
 COPY . .
 
-# Define PYTHONPATH
+# Define PYTHONPATH para que Python encontre os módulos do projeto
 ENV PYTHONPATH=/app
 
-# Comando padrão para rodar o script principal do agregador
+# Comando para rodar o script principal do agregador
 CMD ["python", "-u", "src/data_aggregator/daily_aggregator.py"]
