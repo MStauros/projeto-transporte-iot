@@ -69,15 +69,3 @@ jobs:
     - name: Capturar Logs do Producer de Teste # <--- NOVA ETAPA
       if: always() # Garante que esta etapa rode mesmo se a anterior falhar
       run: docker compose -f docker-compose.test.yml -p github-actions-test-env logs viagem-producer_test
-
-  # --- Etapas de CD (comentadas no seu arquivo) ---
-  # publish-images:
-  #   needs: build-and-test
-  #   if: github.ref == 'refs/heads/main'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Checkout do código
-  #   - name: Configurar Docker Buildx
-  #   - name: Login no Docker Hub
-  #   - name: Build e Push da Imagem do Producer
-  #   - name: Build e Push da Imagem do Consumer

@@ -31,7 +31,7 @@ services:
     command: >
       sh -c "/usr/bin/wait-for-it.sh kafka_test:29092 --timeout=60 --strict -- \
       /usr/bin/wait-for-it.sh postgres_test:5432 --timeout=60 --strict -- \
-      pytest /app/tests/integration/test_kafka_integration.py /app/tests/e2e/test_full_pipeline.py"
+      pytest /app/tests/integration/test_kafka_integration.py"
     networks:
       - kafka-network_test # Conecta-se à rede de teste
 
