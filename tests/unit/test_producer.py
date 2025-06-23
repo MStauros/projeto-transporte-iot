@@ -2,6 +2,7 @@ import pytest
 from src.producer.kafka_producer import ViagemKafkaProducer
 from src.producer.sensor_simulator import gerar_viagens
 
+
 class MockKafkaProducer:
     def __init__(self, *args, **kwargs):
         self.sent = []
@@ -12,6 +13,7 @@ class MockKafkaProducer:
 
     def flush(self):
         pass
+
 
 def test_simulador_envia_viagem(monkeypatch):
     # Mock KafkaProducer para não precisar de Kafka real

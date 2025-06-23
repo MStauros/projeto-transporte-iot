@@ -15,11 +15,13 @@ POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
 POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
 POSTGRES_DB = os.getenv("POSTGRES_DB", "iot")
 
+
 @pytest.fixture(scope="module")
 def kafka_producer_e2e():
     producer = KafkaProducer(bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS)
     yield producer
     producer.close()
+
 
 @pytest.fixture(scope="module")
 def db_engine_e2e():
@@ -34,14 +36,20 @@ def db_engine_e2e():
             print("Conexão com o banco de dados estabelecida para E2E.")
             break
         except Exception as e:
-            print(f"Tentativa {i+1}/{max_retries}: Conexão com o banco de dados falhou para E2E: {e}")
+            print(
+                f"Tentativa {i+1}/{max_retries}: Conexão com o banco de dados falhou para E2E: {e}"
+            )
             time.sleep(2)
     else:
-        raise Exception("Não foi possível conectar ao banco de dados após várias tentativas para E2E.")
+        raise Exception(
+            "Não foi possível conectar ao banco de dados após várias tentativas para E2E."
+        )
 
     with engine.connect() as connection:
         connection.execute(text("DROP TABLE IF EXISTS viagens"))
-        connection.execute(text("""
+        connection.execute(
+            text(
+                """
             CREATE TABLE IF NOT EXISTS viagens (
                 id SERIAL PRIMARY KEY,
                 data_inicio TIMESTAMP,
@@ -52,10 +60,13 @@ def db_engine_e2e():
                 distancia FLOAT,
                 proposito VARCHAR(255)
             )
-        """))
+        """
+            )
+        )
     yield engine
     with engine.connect() as connection:
         connection.execute(text("DROP TABLE IF EXISTS viagens"))
+
 
 # Função de espera ativa
 def wait_for_db_entry(engine, query, max_wait=10):
@@ -67,6 +78,7 @@ def wait_for_db_entry(engine, query, max_wait=10):
         time.sleep(1)
     raise TimeoutError("Entrada não encontrada no banco após espera.")
 
+
 def test_full_pipeline_data_flow(kafka_producer_e2e, db_engine_e2e):
     test_data = {
         "data_inicio": "2025-01-02T10:00:00",
@@ -75,7 +87,7 @@ def test_full_pipeline_data_flow(kafka_producer_e2e, db_engine_e2e):
         "local_inicio": "Origem E2E",
         "local_fim": "Destino E2E",
         "distancia": 200.0,
-        "proposito": "Lazer"
+        "proposito": "Lazer",
     }
     message_to_send = json.dumps(test_data).encode("utf-8")
     kafka_producer_e2e.send("dados-viagem", message_to_send)

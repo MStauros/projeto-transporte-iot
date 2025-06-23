@@ -9,10 +9,10 @@ from src.models.db_models import Base, ViagemDB, InfoCorridasDoDia
 
 # Configuração de logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
-logger = logging.getLogger('DailyAggregator')
+logger = logging.getLogger("DailyAggregator")
+
 
 class DailyAggregator:
     def __init__(self, db_connection_url: str):
@@ -33,61 +33,63 @@ class DailyAggregator:
 
             # --- CONSTRUÇÃO DA CONSULTA SQL MAIS MODULAR E EXPLÍCITA ---
             # Definindo as colunas agregadas individualmente
-            dt_refe_col = func.date(ViagemDB.data_inicio).label('dt_refe')
-            qt_corr_col = func.count(ViagemDB.id).label('qt_corr')
+            dt_refe_col = func.date(ViagemDB.data_inicio).label("dt_refe")
+            qt_corr_col = func.count(ViagemDB.id).label("qt_corr")
 
             # Contagens condicionais usando func.sum(case(...))
             qt_corr_neg_col = func.sum(
-                case(
-                    (ViagemDB.categoria == 'Negócio', 1),
-                    else_=0
-                )
-            ).label('qt_corr_neg')
+                case((ViagemDB.categoria == "Negócio", 1), else_=0)
+            ).label("qt_corr_neg")
 
             qt_corr_pess_col = func.sum(
-                case(
-                    (ViagemDB.categoria == 'Pessoal', 1),
-                    else_=0
-                )
-            ).label('qt_corr_pess')
+                case((ViagemDB.categoria == "Pessoal", 1), else_=0)
+            ).label("qt_corr_pess")
 
-            vl_max_dist_col = func.max(ViagemDB.distancia).label('vl_max_dist')
-            vl_min_dist_col = func.min(ViagemDB.distancia).label('vl_min_dist')
-            vl_avg_dist_col = func.avg(ViagemDB.distancia).label('vl_avg_dist')
+            vl_max_dist_col = func.max(ViagemDB.distancia).label("vl_max_dist")
+            vl_min_dist_col = func.min(ViagemDB.distancia).label("vl_min_dist")
+            vl_avg_dist_col = func.avg(ViagemDB.distancia).label("vl_avg_dist")
 
             qt_corr_reuni_col = func.sum(
-                case(
-                    (ViagemDB.proposito == 'Reunião', 1),
-                    else_=0
-                )
-            ).label('qt_corr_reuni')
+                case((ViagemDB.proposito == "Reunião", 1), else_=0)
+            ).label("qt_corr_reuni")
 
             qt_corr_nao_reuni_col = func.sum(
                 case(
-                    (and_(ViagemDB.proposito != None, ViagemDB.proposito != 'Reunião'), 1),
-                    else_=0
+                    (
+                        and_(
+                            ViagemDB.proposito != None, ViagemDB.proposito != "Reunião"
+                        ),
+                        1,
+                    ),
+                    else_=0,
                 )
-            ).label('qt_corr_nao_reuni')
+            ).label("qt_corr_nao_reuni")
 
             # Combina todas as colunas para a consulta principal
-            daily_stats_query = session.query(
-                dt_refe_col,
-                qt_corr_col,
-                qt_corr_neg_col,
-                qt_corr_pess_col,
-                vl_max_dist_col,
-                vl_min_dist_col,
-                vl_avg_dist_col,
-                qt_corr_reuni_col,
-                qt_corr_nao_reuni_col
-            ).group_by(dt_refe_col).all() # Agrupa pela coluna de data_referencia
+            daily_stats_query = (
+                session.query(
+                    dt_refe_col,
+                    qt_corr_col,
+                    qt_corr_neg_col,
+                    qt_corr_pess_col,
+                    vl_max_dist_col,
+                    vl_min_dist_col,
+                    vl_avg_dist_col,
+                    qt_corr_reuni_col,
+                    qt_corr_nao_reuni_col,
+                )
+                .group_by(dt_refe_col)
+                .all()
+            )  # Agrupa pela coluna de data_referencia
 
             # Processa os resultados e insere/atualiza na tabela info_corridas_do_dia
-            for row in daily_stats_query: # Iterar sobre o resultado da query
+            for row in daily_stats_query:  # Iterar sobre o resultado da query
                 dt_refe = row.dt_refe
-                
+
                 # Tenta encontrar um registro existente para a data
-                existing_entry = session.query(InfoCorridasDoDia).filter_by(dt_refe=dt_refe).first()
+                existing_entry = (
+                    session.query(InfoCorridasDoDia).filter_by(dt_refe=dt_refe).first()
+                )
 
                 if existing_entry:
                     # Atualiza o registro existente
@@ -111,11 +113,11 @@ class DailyAggregator:
                         vl_min_dist=row.vl_min_dist,
                         vl_avg_dist=row.vl_avg_dist,
                         qt_corr_reuni=row.qt_corr_reuni,
-                        qt_corr_nao_reuni=row.qt_corr_nao_reuni
+                        qt_corr_nao_reuni=row.qt_corr_nao_reuni,
                     )
                     session.add(new_entry)
                     logger.debug(f"Inserido novo InfoCorridasDoDia para {dt_refe}")
-            
+
             session.commit()
             logger.info("Agregação diária concluída e dados salvos com sucesso.")
 
@@ -126,10 +128,12 @@ class DailyAggregator:
         finally:
             session.close()
 
+
 # Exemplo de como rodar o agregador (pode ser usado em um script principal separado)
 if __name__ == "__main__":
     # Carregar variáveis de ambiente para a URL do DB
     from dotenv import load_dotenv
+
     load_dotenv()
 
     db_connection_url = (
