@@ -2,7 +2,6 @@
 
 import logging
 import os
-from datetime import datetime
 
 from sqlalchemy import and_, case, create_engine, func
 from sqlalchemy.orm import sessionmaker
@@ -59,7 +58,7 @@ class DailyAggregator:
                 case(
                     (
                         and_(
-                            ViagemDB.proposito != None, ViagemDB.proposito != "Reunião"
+                            ViagemDB.proposito is not None, ViagemDB.proposito is not "Reunião"
                         ),
                         1,
                     ),

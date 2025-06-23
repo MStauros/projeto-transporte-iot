@@ -1,7 +1,5 @@
 # src/models/db_models.py
 
-from datetime import datetime
-
 from sqlalchemy import Column, Date, DateTime, Float, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 

@@ -1,5 +1,3 @@
-import pytest
-
 from src.producer.kafka_producer import ViagemKafkaProducer
 from src.producer.sensor_simulator import gerar_viagens
 
