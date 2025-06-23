@@ -32,7 +32,7 @@ max-line-length = 150
 extend-ignore = "E203,E501"
 
 [tool.black]
-line-length = 79
+line-length = 200
 
 [build-system]
 requires = ["poetry-core"]
