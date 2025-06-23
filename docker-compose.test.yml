@@ -70,12 +70,6 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     networks:
       - kafka-network_test
-    healthcheck:
-      test: ["CMD-SHELL", "/usr/bin/kafka-topics --bootstrap-server localhost:9092 --list"]
-      interval: 15s
-      timeout: 25s
-      retries: 25
-      start_period: 40s
 
   # Serviço PostgreSQL para o ambiente de teste
   postgres_test:
