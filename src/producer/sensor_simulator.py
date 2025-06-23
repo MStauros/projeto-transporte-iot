@@ -40,7 +40,9 @@ def gerar_cidade():
 
 def gerar_viagem() -> Viagem:
     data_inicio = fake.date_time_between(start_date="-1y", end_date="now")
-    duracao = timedelta(hours=random.randint(1, 24), days=random.randint(0, 14))
+    duracao = timedelta(
+        hours=random.randint(1, 24), days=random.randint(0, 14)
+    )
     data_fim = data_inicio + duracao
 
     categoria = random.choice(categorias_viagem)

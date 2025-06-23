@@ -9,7 +9,9 @@ from kafka import KafkaProducer
 from sqlalchemy import create_engine, text
 
 # Configurações do Kafka e PostgreSQL para o ambiente de teste
-KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+KAFKA_BOOTSTRAP_SERVERS = os.getenv(
+    "KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"
+)
 POSTGRES_USER = os.getenv("POSTGRES_USER", "admin")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "admin123")
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")

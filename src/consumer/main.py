@@ -16,14 +16,17 @@ load_dotenv()
 
 # Configuração de logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger("MainConsumer")
 
 
 def main():
     kafka_config = {
-        "bootstrap.servers": os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092"),
+        "bootstrap.servers": os.getenv(
+            "KAFKA_BOOTSTRAP_SERVERS", "kafka:29092"
+        ),
         "group.id": os.getenv("KAFKA_GROUP_ID", "viagem-consumer-group"),
     }
 

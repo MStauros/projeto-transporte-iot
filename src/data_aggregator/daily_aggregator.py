@@ -10,7 +10,8 @@ from src.models.db_models import Base, InfoCorridasDoDia, ViagemDB
 
 # Configuração de logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger("DailyAggregator")
 
@@ -90,7 +91,9 @@ class DailyAggregator:
 
                 # Tenta encontrar um registro existente para a data
                 existing_entry = (
-                    session.query(InfoCorridasDoDia).filter_by(dt_refe=dt_refe).first()
+                    session.query(InfoCorridasDoDia)
+                    .filter_by(dt_refe=dt_refe)
+                    .first()
                 )
 
                 if existing_entry:
@@ -103,7 +106,9 @@ class DailyAggregator:
                     existing_entry.vl_avg_dist = row.vl_avg_dist
                     existing_entry.qt_corr_reuni = row.qt_corr_reuni
                     existing_entry.qt_corr_nao_reuni = row.qt_corr_nao_reuni
-                    logger.debug(f"Atualizado InfoCorridasDoDia para {dt_refe}")
+                    logger.debug(
+                        f"Atualizado InfoCorridasDoDia para {dt_refe}"
+                    )
                 else:
                     # Cria um novo registro
                     new_entry = InfoCorridasDoDia(
@@ -118,10 +123,14 @@ class DailyAggregator:
                         qt_corr_nao_reuni=row.qt_corr_nao_reuni,
                     )
                     session.add(new_entry)
-                    logger.debug(f"Inserido novo InfoCorridasDoDia para {dt_refe}")
+                    logger.debug(
+                        f"Inserido novo InfoCorridasDoDia para {dt_refe}"
+                    )
 
             session.commit()
-            logger.info("Agregação diária concluída e dados salvos com sucesso.")
+            logger.info(
+                "Agregação diária concluída e dados salvos com sucesso."
+            )
 
         except Exception as e:
             session.rollback()

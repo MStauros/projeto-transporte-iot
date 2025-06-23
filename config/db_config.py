@@ -17,8 +17,12 @@ class DBConfig:
 
         # Tenta ler do Docker Compose (quando rodando dentro do container)
         self.user = os.getenv("POSTGRES_USER", default_config["user"])
-        self.password = os.getenv("POSTGRES_PASSWORD", default_config["password"])
-        self.host = os.getenv("POSTGRES_HOST", "postgres")  # Nome do serviço no compose
+        self.password = os.getenv(
+            "POSTGRES_PASSWORD", default_config["password"]
+        )
+        self.host = os.getenv(
+            "POSTGRES_HOST", "postgres"
+        )  # Nome do serviço no compose
         self.port = os.getenv("POSTGRES_PORT", default_config["port"])
         self.database = os.getenv("POSTGRES_DB", default_config["database"])
 

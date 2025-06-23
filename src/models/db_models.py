@@ -8,8 +8,12 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
-class ViagemDB(Base):  # Esta é a classe que o SQLAlchemy usará para interagir com o DB
-    __tablename__ = "viagens"  # Nome da tabela no seu banco de dados PostgreSQL
+class ViagemDB(
+    Base
+):  # Esta é a classe que o SQLAlchemy usará para interagir com o DB
+    __tablename__ = (
+        "viagens"  # Nome da tabela no seu banco de dados PostgreSQL
+    )
 
     # Definição das colunas da tabela
     id = Column(Integer, primary_key=True, autoincrement=True)
