@@ -9,11 +9,9 @@ services:
       dockerfile: Dockerfile.test # O Dockerfile para o ambiente de testes
     depends_on:
       kafka_test: # Depende da instância de Kafka para teste
-        condition: service_healthy
+        condition: service_started 
       postgres_test: # Depende da instância de PostgreSQL para teste
-        condition: service_healthy
-      # Adicione dependência para os serviços de aplicação se seus testes os levantam e interagem com eles
-      # (Por exemplo, se seus testes E2E iniciam o consumer e producer para testar o fluxo de ponta a ponta)
+        condition: service_started 
       viagem-consumer_test:
         condition: service_started
       viagem-producer_test:
@@ -46,12 +44,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - kafka-network_test
-    healthcheck:
-      test: ["CMD-SHELL", "echo stat | nc localhost 2181"]
-      interval: 10s
-      timeout: 15s
-      retries: 25
-      start_period: 40s
+
 
   # Serviço Kafka Broker para o ambiente de teste
   kafka_test:
@@ -59,7 +52,7 @@ services:
     container_name: kafka_test
     depends_on:
       zookeeper_test:
-        condition: service_healthy
+        condition: service_started 
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper_test:2181
@@ -81,11 +74,7 @@ services:
       POSTGRES_DB: iot
     networks:
       - kafka-network_test
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d iot"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
+
 
   # Serviço Consumer para o ambiente de teste (se necessário para testes E2E)
   viagem-consumer_test:
@@ -101,9 +90,9 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka_test:29092
     depends_on:
       postgres_test:
-        condition: service_healthy
+        condition: service_started 
       kafka_test:
-        condition: service_healthy
+        condition: servicservice_started e_healthy
     networks:
       - kafka-network_test
     restart: "no" # Para testes, geralmente queremos que ele rode e pare.
@@ -117,7 +106,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka_test:29092
     depends_on:
       kafka_test:
-        condition: service_healthy
+        condition: service_started 
     networks:
       - kafka-network_test
     restart: "no" # Para testes, geralmente queremos que ele rode e pare.
