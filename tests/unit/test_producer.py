@@ -37,4 +37,4 @@ def test_simulador_envia_viagem(monkeypatch):
     assert "CATEGORIA" in dados_enviados
     assert dados_enviados["CATEGORIA"] in ["Negócio", "Pessoal"]
     assert float(dados_enviados["DISTANCIA"]) >= 0
-    assert dados_enviados["local_inicio"] != dados_enviados["local_fim"]
+    assert dados_enviados["LOCAL_INICIO"] != dados_enviados["LOCAL_FIM"]
