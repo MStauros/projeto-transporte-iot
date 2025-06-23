@@ -11,43 +11,6 @@ O pipeline de dados consiste em:
 4.  **Agregador de Dados Diários**: Processa os dados brutos de viagens e gera uma tabela sumarizada com métricas diárias.
 5.  **PostgreSQL**: Banco de dados relacional para armazenamento dos dados de viagens e dos dados agregados.
 
-## Estrutura do Projeto
-
-.
-├── docker-compose.yml              # Orquestração do ambiente local (Kafka, Zookeeper, Postgres, PGAdmin, Consumer, Producer, Aggregator)
-├── docker-compose.test.yml         # Orquestração do ambiente para testes de integração/E2E
-├── Dockerfile.aggregator           # Dockerfile para o serviço de agregação de dados
-├── Dockerfile.consumer             # Dockerfile para o serviço consumidor
-├── Dockerfile.producer             # Dockerfile para o serviço produtor
-├── Dockerfile.test                 # Dockerfile para o runner de testes no CI/CD
-├── pyproject.toml                  # Gerenciamento de dependências Python com Poetry
-├── requirements.txt                # Lista de dependências Python (gerado pelo Poetry)
-├── .github/workflows/
-│   └── main_ci_cd.yml              # Pipeline de CI/CD com GitHub Actions
-├── config/
-│   └── db_config.py                # Configurações de conexão com o banco de dados
-├── scripts/
-│   └── setup-local-env.sh          # Script para gerenciar o ambiente Docker local
-└── src/
-├── consumer/
-│   ├── data_processor.py       # Lógica de processamento de mensagens Kafka e persistência no DB
-│   └── main.py                 # Ponto de entrada do serviço consumidor
-├── data_aggregator/
-│   └── daily_aggregator.py     # Lógica para agregação diária de dados
-├── models/
-│   ├── db_models.py            # Modelos de banco de dados (SQLAlchemy ORM)
-│   └── sensor_data.py          # Modelos de dados de sensores (Pydantic)
-└── producer/
-├── kafka_producer.py       # Lógica para enviar dados ao Kafka
-├── run_simulador.py        # Script para rodar o simulador de sensores
-└── sensor_simulator.py     # Lógica para gerar dados de sensores falsos
-└── tests/
-├── integration/
-│   └── test_kafka_integration.py # Testes de integração (Kafka, DB)
-└── unit/
-├── test_consumer.py        # Testes unitários para o consumidor
-└── test_producer.py        # Testes unitários para o produtor
-
 
 ## Como Iniciar o Projeto Localmente
 
