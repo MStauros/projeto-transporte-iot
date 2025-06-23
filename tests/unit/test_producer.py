@@ -1,4 +1,4 @@
-import json
+# tests/unit/test_producer.py
 
 from src.producer.kafka_producer import ViagemKafkaProducer
 from src.producer.sensor_simulator import gerar_viagens
@@ -22,8 +22,6 @@ def test_simulador_envia_viagem(monkeypatch):
 
     producer = ViagemKafkaProducer(bootstrap_servers="mock:9092", topic="viagens")
 
-    # gerar_viagens retorna uma LISTA, mesmo que seja apenas um item.
-    # O producer.enviar_viagem espera um ÚNICO objeto Viagem.
     viagens_geradas = gerar_viagens(1)
     viagem_unica = viagens_geradas[0]  # Extrai o único objeto Viagem da lista
 
@@ -31,8 +29,8 @@ def test_simulador_envia_viagem(monkeypatch):
 
     assert len(producer.producer.sent) == 1
 
-    dados_enviados_raw = producer.producer.sent[0][1]
-    dados_enviados = json.loads(dados_enviados_raw.decode("utf-8"))
+    dados_enviados = producer.producer.sent[0][1]
+
     assert dados_enviados["categoria"] in ["Negócio", "Pessoal"]
     assert dados_enviados["distancia"] >= 0
     assert dados_enviados["local_inicio"] != dados_enviados["local_fim"]
