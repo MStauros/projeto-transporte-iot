@@ -1,0 +1,72 @@
+# .github/workflows/main_ci_cd.yml
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v4
+
+    - name: Configurar Ambiente Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Instalar Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        poetry --version
+
+    - name: Instalar dependências com Poetry
+      run: poetry install --no-root --no-interaction --no-ansi
+
+    - name: Executar Linting com Black
+      run: poetry run black --check .
+
+    - name: Executar Linting com Flake8
+      run: poetry run flake8 .
+
+    - name: Executar Linting com Isort
+      run: poetry run isort --check-only .
+
+    - name: Rodar Testes Unitários
+      run: poetry run pytest tests/unit/
+
+    - name: Build da Imagem Docker do Producer
+      run: docker build -f Dockerfile.producer -t producer-image:latest .
+
+    - name: Build da Imagem Docker do Consumer
+      run: docker build -f Dockerfile.consumer -t consumer-image:latest .
+
+    # --- Etapas Opcionais de Segurança (comentadas no seu arquivo) ---
+    # - name: Varredura de Segurança da Imagem do Producer com Trivy
+    # - name: Varredura de Segurança da Imagem do Consumer com Trivy
+
+    - name: Rodar Testes de Integração e E2E
+      run: docker-compose -f docker-compose.test.yml --project-name github-actions-test-env up --build --abort-on-container-exit --exit-code-from test-runner
+
+  # --- Etapas de CD (comentadas no seu arquivo) ---
+  # publish-images:
+  #   needs: build-and-test
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Checkout do código
+  #   - name: Configurar Docker Buildx
+  #   - name: Login no Docker Hub
+  #   - name: Build e Push da Imagem do Producer
+  #   - name: Build e Push da Imagem do Consumer
