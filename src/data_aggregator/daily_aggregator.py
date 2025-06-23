@@ -59,7 +59,7 @@ class DailyAggregator:
                     (
                         and_(
                             ViagemDB.proposito is not None,
-                            ViagemDB.proposito is not "Reunião",
+                            ViagemDB.proposito != "Reunião",
                         ),
                         1,
                     ),
