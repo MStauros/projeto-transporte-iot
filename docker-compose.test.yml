@@ -27,7 +27,7 @@ services:
     # Usamos 'command' para esperar por Kafka e Postgres via wait-for-it, e então rodar pytest
     command: >
       sh -c "/usr/bin/wait-for-it.sh kafka:29092 --timeout=60 --strict -- \
-      /usr/bin/wait-for-it.sh postgres:5432 --timeout=60 --strict -- \
-      pytest /app/tests/integration/test_kafka_integration.py /app/tests/e2e test_full_pipeline.py"
+            /usr/bin/wait-for-it.sh postgres:5432 --timeout=60 --strict -- \
+            pytest /app/tests/integration/test_kafka_integration.py /app/tests/e2e/test_full_pipeline.py"
     networks:
       - kafka-network # O test-runner também precisa estar na rede kafka-network

@@ -1,6 +1,6 @@
-import pytest
 from src.producer.kafka_producer import ViagemKafkaProducer
 from src.producer.sensor_simulator import gerar_viagens
+
 
 class MockKafkaProducer:
     def __init__(self, *args, **kwargs):
@@ -13,11 +13,16 @@ class MockKafkaProducer:
     def flush(self):
         pass
 
+
 def test_simulador_envia_viagem(monkeypatch):
     # Mock KafkaProducer para não precisar de Kafka real
-    monkeypatch.setattr("src.producer.kafka_producer.KafkaProducer", MockKafkaProducer)
+    monkeypatch.setattr(
+        "src.producer.kafka_producer.KafkaProducer", MockKafkaProducer
+    )
 
-    producer = ViagemKafkaProducer(bootstrap_servers="mock:9092", topic="viagens")
+    producer = ViagemKafkaProducer(
+        bootstrap_servers="mock:9092", topic="viagens"
+    )
     viagem = gerar_viagens(1)
     producer.enviar_viagem(viagem)
 

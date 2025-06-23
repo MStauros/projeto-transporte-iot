@@ -1,20 +1,20 @@
 import json
 import logging
 from datetime import datetime
-from confluent_kafka import Consumer, KafkaException, KafkaError
+
+from confluent_kafka import Consumer, KafkaError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from src.models.sensor_data import Viagem
 
-from src.models.sensor_data import Viagem as PydanticViagem
-from src.models.db_models import ViagemDB, Base
+from src.models.db_models import Base, ViagemDB
 
 # Configuração de logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
-logger = logging.getLogger('ViagemProcessor')
+logger = logging.getLogger("ViagemProcessor")
+
 
 class DataProcessor:
     def __init__(self, kafka_config: dict, db_connection_url: str):
@@ -40,13 +40,26 @@ class DataProcessor:
     def setup_kafka(self):
         """Configura o consumer Kafka"""
         try:
-            self.consumer = Consumer({
-                'bootstrap.servers': self.kafka_config['bootstrap.servers'],
-                'group.id': self.kafka_config.get('group.id', 'viagem-group'),
-                'auto.offset.reset': self.kafka_config.get('auto.offset.reset', 'earliest'),
-                'enable.auto.commit': self.kafka_config.get('enable.auto.commit', False)
-            })
-            self.logger.info("Consumer Kafka configurado para servers: %s", self.kafka_config['bootstrap.servers'])
+            self.consumer = Consumer(
+                {
+                    "bootstrap.servers": self.kafka_config[
+                        "bootstrap.servers"
+                    ],
+                    "group.id": self.kafka_config.get(
+                        "group.id", "viagem-group"
+                    ),
+                    "auto.offset.reset": self.kafka_config.get(
+                        "auto.offset.reset", "earliest"
+                    ),
+                    "enable.auto.commit": self.kafka_config.get(
+                        "enable.auto.commit", False
+                    ),
+                }
+            )
+            self.logger.info(
+                "Consumer Kafka configurado para servers: %s",
+                self.kafka_config["bootstrap.servers"],
+            )
         except Exception as e:
             self.logger.error("Erro ao configurar Kafka consumer: %s", str(e))
             raise
@@ -63,14 +76,23 @@ class DataProcessor:
         """Processa e valida uma mensagem Kafka"""
         try:
             # Validação básica dos campos obrigatórios
-            required_fields = ['DATA_INICIO', 'DATA_FIM', 'CATEGORIA', 'LOCAL_INICIO', 'LOCAL_FIM', 'DISTANCIA']
+            required_fields = [
+                "DATA_INICIO",
+                "DATA_FIM",
+                "CATEGORIA",
+                "LOCAL_INICIO",
+                "LOCAL_FIM",
+                "DISTANCIA",
+            ]
             if not all(field in msg_value for field in required_fields):
-                raise ValueError("Mensagem incompleta - campos obrigatórios faltando")
+                raise ValueError(
+                    "Mensagem incompleta - campos obrigatórios faltando"
+                )
 
             # Conversão de tipos
-            data_inicio = self._parse_datetime(msg_value['DATA_INICIO'])
-            data_fim = self._parse_datetime(msg_value['DATA_FIM'])
-            distancia = float(msg_value['DISTANCIA'])
+            data_inicio = self._parse_datetime(msg_value["DATA_INICIO"])
+            data_fim = self._parse_datetime(msg_value["DATA_FIM"])
+            distancia = float(msg_value["DISTANCIA"])
 
             # Validações de negócio
             if distancia < 0:
@@ -81,11 +103,11 @@ class DataProcessor:
             return ViagemDB(
                 data_inicio=data_inicio,
                 data_fim=data_fim,
-                categoria=msg_value['CATEGORIA'],
-                local_inicio=msg_value['LOCAL_INICIO'],
-                local_fim=msg_value['LOCAL_FIM'],
+                categoria=msg_value["CATEGORIA"],
+                local_inicio=msg_value["LOCAL_INICIO"],
+                local_fim=msg_value["LOCAL_FIM"],
                 distancia=distancia,
-                proposito=msg_value.get('PROPOSITO')
+                proposito=msg_value.get("PROPOSITO"),
             )
 
         except Exception as e:
@@ -122,17 +144,23 @@ class DataProcessor:
                         continue
                     else:
                         self.logger.error("Erro no Kafka: %s", msg.error())
-                        continue # Continua tentando consumir outras mensagens
+                        continue  # Continua tentando consumir outras mensagens
 
                 try:
-                    payload = json.loads(msg.value().decode('utf-8'))
+                    payload = json.loads(msg.value().decode("utf-8"))
                     processed_data = self.process_message(payload)
                     self.save_to_db(processed_data)
                     self.consumer.commit(asynchronous=False)
-                    self.logger.info("Mensagem processada - Offset: %d", msg.offset())
+                    self.logger.info(
+                        "Mensagem processada - Offset: %d", msg.offset()
+                    )
 
                 except Exception as e:
-                    self.logger.error("Erro no processamento ou salvamento da mensagem (offset %d): %s", msg.offset(), str(e))
+                    self.logger.error(
+                        "Erro no processamento ou salvamento da mensagem (offset %d): %s",
+                        msg.offset(),
+                        str(e),
+                    )
                     # Não relança o erro aqui para não parar o consumer por uma única mensagem inválida
                     # O commit não é feito para esta mensagem, permitindo reprocessamento ou tratamento posterior
                     continue

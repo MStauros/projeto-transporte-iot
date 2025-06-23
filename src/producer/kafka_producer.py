@@ -1,12 +1,15 @@
-from kafka import KafkaProducer
 import json
+
+from kafka import KafkaProducer
+
 from ..models.sensor_data import Viagem
+
 
 class ViagemKafkaProducer:
     def __init__(self, bootstrap_servers: str, topic: str):
         self.producer = KafkaProducer(
             bootstrap_servers=bootstrap_servers,
-            value_serializer=lambda v: json.dumps(v).encode('utf-8')
+            value_serializer=lambda v: json.dumps(v).encode("utf-8"),
         )
         self.topic = topic
 
@@ -19,12 +22,11 @@ class ViagemKafkaProducer:
             "LOCAL_INICIO": viagem.local_inicio,
             "LOCAL_FIM": viagem.local_fim,
             "DISTANCIA": f"{viagem.distancia:.2f}",
-            "PROPOSITO": viagem.proposito
+            "PROPOSITO": viagem.proposito,
         }
 
     def enviar_viagem(self, viagem: Viagem):
         # Use a função viagem_to_payload para formatar a mensagem
         payload = self.viagem_to_payload(viagem)
-        self.producer.send(self.topic, payload) # Envia o payload formatado
+        self.producer.send(self.topic, payload)  # Envia o payload formatado
         self.producer.flush()
-

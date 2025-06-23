@@ -27,6 +27,13 @@ black = "^24.4.2"
 flake8 = "^7.0"
 isort = "^5.13.2"
 
+[tool.flake8]
+max-line-length = 150
+extend-ignore = "E203,E501"
+
+[tool.black]
+line-length = 79
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
