@@ -31,6 +31,9 @@ jobs:
         echo "$HOME/.local/bin" >> $GITHUB_PATH
         poetry --version
 
+    - name: Limpar cache do Poetry (para evitar instalações corrompidas)
+      run: poetry cache clear --all pypi
+
     - name: Instalar dependências com Poetry
       run: poetry install --no-root --no-interaction --no-ansi
 
