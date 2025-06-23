@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 
-from src.consumer.data_processor import DataProcessor # noqa: E402
+from src.consumer.data_processor import DataProcessor  # noqa: E402
 
 # Carrega variáveis de ambiente do .env
 load_dotenv()

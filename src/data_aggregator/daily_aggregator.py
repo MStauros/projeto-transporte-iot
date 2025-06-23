@@ -58,7 +58,8 @@ class DailyAggregator:
                 case(
                     (
                         and_(
-                            ViagemDB.proposito is not None, ViagemDB.proposito is not "Reunião"
+                            ViagemDB.proposito is not None,
+                            ViagemDB.proposito is not "Reunião",
                         ),
                         1,
                     ),
