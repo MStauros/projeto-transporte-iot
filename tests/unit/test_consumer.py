@@ -44,6 +44,6 @@ def test_store_data(mock_db_session):
 
     test_data = ViagemDB(data_inicio=datetime.now(), data_fim=datetime.now(), categoria="TEST", local_inicio="A", local_fim="B", distancia=10.0)
 
-    processor.store_data(test_data)
+    processor.save_to_db(test_data)
     mock_db_session.add.assert_called_once_with(test_data)
     mock_db_session.commit.assert_called_once()
