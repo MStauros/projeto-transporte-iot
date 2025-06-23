@@ -1,6 +1,6 @@
 # src/models/db_models.py
 
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime, Date
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
@@ -26,3 +26,20 @@ class ViagemDB(Base): # Esta é a classe que o SQLAlchemy usará para interagir 
         return (f"<ViagemDB(id={self.id}, data_inicio='{self.data_inicio}', "
                 f"categoria='{self.categoria}', distancia={self.distancia})>")
 
+# Novo modelo para a tabela info_corridas_do_dia (Fase 8)
+class InfoCorridasDoDia(Base):
+    __tablename__ = 'info_corridas_do_dia'
+
+    dt_refe = Column(Date, primary_key=True, nullable=False)
+    qt_corr = Column(Integer, nullable=False)
+    qt_corr_neg = Column(Integer, nullable=False)
+    qt_corr_pess = Column(Integer, nullable=False)
+    vl_max_dist = Column(Float, nullable=False)
+    vl_min_dist = Column(Float, nullable=False)
+    vl_avg_dist = Column(Float, nullable=False)
+    qt_corr_reuni = Column(Integer, nullable=False)
+    qt_corr_nao_reuni = Column(Integer, nullable=False)
+
+    def __repr__(self):
+        return (f"<InfoCorridasDoDia(dt_refe='{self.dt_refe}', qt_corr={self.qt_corr}, "
+                f"vl_avg_dist={self.vl_avg_dist})>")

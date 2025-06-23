@@ -4,7 +4,6 @@ from datetime import datetime
 from confluent_kafka import Consumer, KafkaException, KafkaError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from config.db_config import db_config
 from src.models.sensor_data import Viagem
 
 from src.models.sensor_data import Viagem as PydanticViagem

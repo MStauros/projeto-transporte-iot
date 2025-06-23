@@ -1,7 +1,9 @@
+services:
+  # O serviço test-runner é o que executa seus testes Pytest
   test-runner:
     build:
       context: .
-      dockerfile: Dockerfile.test
+      dockerfile: Dockerfile.test # Será criado abaixo
     depends_on:
       kafka:
         condition: service_healthy
@@ -20,5 +22,12 @@
       POSTGRES_DB: iot
     volumes:
       - ./tests:/app/tests
+      - ./src:/app/src # Adicionado para que o test-runner possa importar o código do projeto
+      - ./config:/app/config # Adicionado
+    # Usamos 'command' para esperar por Kafka e Postgres via wait-for-it, e então rodar pytest
     command: >
-      sh -c "sleep 5 && pytest /app/tests/integration/test_kafka_integration.py /app/tests/e2e/test_full_pipeline.py"
+      sh -c "/usr/bin/wait-for-it.sh kafka:29092 --timeout=60 --strict -- \
+      /usr/bin/wait-for-it.sh postgres:5432 --timeout=60 --strict -- \
+      pytest /app/tests/integration/test_kafka_integration.py /app/tests/e2e test_full_pipeline.py"
+    networks:
+      - kafka-network # O test-runner também precisa estar na rede kafka-network
