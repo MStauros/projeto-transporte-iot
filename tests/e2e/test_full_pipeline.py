@@ -9,9 +9,7 @@ from kafka import KafkaProducer
 from sqlalchemy import create_engine, text
 
 # Configurações do Kafka e PostgreSQL para o ambiente de teste
-KAFKA_BOOTSTRAP_SERVERS = os.getenv(
-    "KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"
-)
+KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "admin")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "admin123")
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
@@ -39,14 +37,10 @@ def db_engine_e2e():
             print("Conexão com o banco de dados estabelecida para E2E.")
             break
         except Exception as e:
-            print(
-                f"Tentativa {i+1}/{max_retries}: Conexão com o banco de dados falhou para E2E: {e}"
-            )
+            print(f"Tentativa {i+1}/{max_retries}: Conexão com o banco de dados falhou para E2E: {e}")
             time.sleep(2)
     else:
-        raise Exception(
-            "Não foi possível conectar ao banco de dados após várias tentativas para E2E."
-        )
+        raise Exception("Não foi possível conectar ao banco de dados após várias tentativas para E2E.")
 
     with engine.connect() as connection:
         connection.execute(text("DROP TABLE IF EXISTS viagens"))
