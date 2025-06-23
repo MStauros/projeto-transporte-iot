@@ -67,7 +67,7 @@ jobs:
       continue-on-error: true
 
     - name: Rodar Testes de Integração e E2E
-      run: docker-compose -f docker-compose.test.yml --project-name github-actions-test-env up --build --abort-on-container-exit --exit-code-from test-runner
+      run: docker compose -f docker-compose.test.yml --project-name github-actions-test-env up --build --abort-on-container-exit --exit-code-from test-runner
 
   # --- Etapas de CD (comentadas no seu arquivo) ---
   # publish-images:
