@@ -57,9 +57,14 @@ jobs:
     - name: Build da Imagem Docker do Consumer
       run: docker build -f Dockerfile.consumer -t consumer-image:latest .
 
-    # --- Etapas Opcionais de Segurança (comentadas no seu arquivo) ---
-    # - name: Varredura de Segurança da Imagem do Producer com Trivy
-    # - name: Varredura de Segurança da Imagem do Consumer com Trivy
+    - name: Diagnosticar Docker Compose no Runner
+      run: |
+        echo "Verificando PATH do shell:"
+        echo $PATH
+        echo "Verificando se docker-compose existe e está no PATH:"
+        which docker-compose
+        docker-compose --version
+      continue-on-error: true
 
     - name: Rodar Testes de Integração e E2E
       run: docker-compose -f docker-compose.test.yml --project-name github-actions-test-env up --build --abort-on-container-exit --exit-code-from test-runner
