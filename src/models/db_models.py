@@ -1,8 +1,9 @@
 # src/models/db_models.py
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, Date
-from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+
+from sqlalchemy import Column, Date, DateTime, Float, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
 
 # Define a Base declarativa para seus modelos de banco de dados
 # Esta Base é essencial para o SQLAlchemy mapear suas classes para tabelas.

@@ -1,9 +1,10 @@
 # tests/e2e/test_full_pipeline.py
 
-import pytest
+import json
 import os
 import time
-import json
+
+import pytest
 from kafka import KafkaProducer
 from sqlalchemy import create_engine, text
 

@@ -1,6 +1,8 @@
-import pytest
 from datetime import datetime
 from unittest.mock import MagicMock
+
+import pytest
+
 from src.consumer.data_processor2 import DataProcessor, ViagemDB
 
 

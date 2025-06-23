@@ -1,8 +1,9 @@
-import pytest
+import json
 import os
 import time
-import json
-from kafka import KafkaProducer, KafkaConsumer
+
+import pytest
+from kafka import KafkaConsumer, KafkaProducer
 from sqlalchemy import create_engine, text
 
 # Configurações do Kafka e PostgreSQL para o ambiente de teste

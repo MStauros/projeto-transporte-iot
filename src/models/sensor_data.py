@@ -1,8 +1,9 @@
 # src/models/sensor_data.py (Sem alterações)
 
-from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class Viagem(BaseModel):  # Este é o modelo Pydantic

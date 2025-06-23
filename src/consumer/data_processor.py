@@ -1,13 +1,14 @@
 import json
 import logging
 from datetime import datetime
-from confluent_kafka import Consumer, KafkaException, KafkaError
+
+from confluent_kafka import Consumer, KafkaError, KafkaException
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from src.models.sensor_data import Viagem
 
+from src.models.db_models import Base, ViagemDB
+from src.models.sensor_data import Viagem
 from src.models.sensor_data import Viagem as PydanticViagem
-from src.models.db_models import ViagemDB, Base
 
 # Configuração de logging
 logging.basicConfig(

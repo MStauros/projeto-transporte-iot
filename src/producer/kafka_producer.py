@@ -1,5 +1,7 @@
-from kafka import KafkaProducer
 import json
+
+from kafka import KafkaProducer
+
 from ..models.sensor_data import Viagem
 
 

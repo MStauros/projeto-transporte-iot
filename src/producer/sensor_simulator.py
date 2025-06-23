@@ -1,7 +1,9 @@
-from faker import Faker
-from datetime import timedelta
 import random
+from datetime import timedelta
 from typing import List
+
+from faker import Faker
+
 from ..models.sensor_data import Viagem
 
 fake = Faker("pt_BR")

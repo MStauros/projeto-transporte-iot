@@ -1,7 +1,8 @@
+import logging
 import os
 import sys
-import logging
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Adiciona o diretório raiz ao sys.path para permitir imports relativos

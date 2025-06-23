@@ -1,11 +1,13 @@
 # src/data_aggregator/daily_aggregator.py
 
-import os
 import logging
+import os
 from datetime import datetime
-from sqlalchemy import create_engine, func, case, and_
+
+from sqlalchemy import and_, case, create_engine, func
 from sqlalchemy.orm import sessionmaker
-from src.models.db_models import Base, ViagemDB, InfoCorridasDoDia
+
+from src.models.db_models import Base, InfoCorridasDoDia, ViagemDB
 
 # Configuração de logging
 logging.basicConfig(
