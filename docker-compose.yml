@@ -131,7 +131,7 @@ services:
       POSTGRES_DB: iot
     depends_on:
       postgres:
-        condition: service_healthy  saudável
+        condition: service_healthy
     networks:
       - kafka-network
     restart: "no" # O agregador é um job pontual, não deve reiniciar automaticamente.
