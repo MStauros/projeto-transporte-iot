@@ -1,5 +1,7 @@
 # tests/unit/test_producer.py
 
+import json
+
 from src.producer.kafka_producer import ViagemKafkaProducer
 from src.producer.sensor_simulator import gerar_viagens
 
@@ -29,7 +31,8 @@ def test_simulador_envia_viagem(monkeypatch):
 
     assert len(producer.producer.sent) == 1
 
-    dados_enviados = producer.producer.sent[0][1]
+    dados_enviados_raw = producer.producer.sent[0][1]
+    dados_enviados = json.loads(dados_enviados_raw.decode("utf-8"))
 
     assert dados_enviados["categoria"] in ["Negócio", "Pessoal"]
     assert dados_enviados["distancia"] >= 0
