@@ -1,7 +1,7 @@
 import logging
 import os
 
-from sqlalchemy import and_, case, create_engine, func
+from sqlalchemy import and_, case, create_engine, func, Numeric, cast
 from sqlalchemy.orm import sessionmaker
 
 from src.models.db_models import Base, InfoCorridasDoDia, ViagemDB
@@ -40,7 +40,7 @@ class DailyAggregator:
 
             vl_max_dist_col = func.max(ViagemDB.distancia).label("vl_max_dist")
             vl_min_dist_col = func.min(ViagemDB.distancia).label("vl_min_dist")
-            vl_avg_dist_col = func.round(func.avg(ViagemDB.distancia), 2).label("vl_avg_dist")
+            vl_avg_dist_col = func.round(cast(func.avg(ViagemDB.distancia), Numeric(10, 2)) 2).label("vl_avg_dist")
 
             qt_corr_reuni_col = func.sum(case((ViagemDB.proposito == "Reunião", 1), else_=0)).label("qt_corr_reuni")
 
