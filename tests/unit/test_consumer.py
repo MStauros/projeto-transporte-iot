@@ -1,10 +1,10 @@
-import pytest
 from datetime import datetime
 from unittest.mock import MagicMock
 
-# Importe apenas o DataProcessor e o ViagemDB (sem o '2' no final)
+import pytest
+
 from src.consumer.data_processor import DataProcessor
-from src.models.db_models import ViagemDB  # Importe ViagemDB diretamente de db_models
+from src.models.db_models import ViagemDB
 
 
 @pytest.fixture
