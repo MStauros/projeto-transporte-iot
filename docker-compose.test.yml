@@ -1,33 +1,133 @@
+# docker-compose.test.yml
+# Este arquivo define um ambiente Docker isolado para rodar testes de integração e E2E.
+
 services:
-  # O serviço test-runner é o que executa seus testes Pytest
+  # O serviço principal que orquestra e executa os testes Pytest
   test-runner:
     build:
       context: .
-      dockerfile: Dockerfile.test # Será criado abaixo
+      dockerfile: Dockerfile.test # O Dockerfile para o ambiente de testes
     depends_on:
-      kafka:
+      kafka_test: # Depende da instância de Kafka para teste
         condition: service_healthy
-      postgres:
+      postgres_test: # Depende da instância de PostgreSQL para teste
         condition: service_healthy
-      viagem-consumer:
+      # Adicione dependência para os serviços de aplicação se seus testes os levantam e interagem com eles
+      # (Por exemplo, se seus testes E2E iniciam o consumer e producer para testar o fluxo de ponta a ponta)
+      viagem-consumer_test:
         condition: service_started
-      viagem-producer:
+      viagem-producer_test:
         condition: service_started
-    environment:
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    environment: # Variáveis de ambiente que os testes usarão para se conectar aos serviços de teste
+      KAFKA_BOOTSTRAP_SERVERS: kafka_test:29092
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin123
-      POSTGRES_HOST: postgres
+      POSTGRES_HOST: postgres_test
       POSTGRES_PORT: 5432
       POSTGRES_DB: iot
-    volumes:
+    volumes: # Monta o código do projeto para que o test-runner possa acessá-lo
       - ./tests:/app/tests
-      - ./src:/app/src # Adicionado para que o test-runner possa importar o código do projeto
-      - ./config:/app/config # Adicionado
-    # Usamos 'command' para esperar por Kafka e Postgres via wait-for-it, e então rodar pytest
+      - ./src:/app/src
+      - ./config:/app/config
+    # Comando que o test-runner executará: espera pelos serviços e roda o pytest
     command: >
-      sh -c "/usr/bin/wait-for-it.sh kafka:29092 --timeout=60 --strict -- \
-            /usr/bin/wait-for-it.sh postgres:5432 --timeout=60 --strict -- \
-            pytest /app/tests/integration/test_kafka_integration.py /app/tests/e2e/test_full_pipeline.py"
+      sh -c "/usr/bin/wait-for-it.sh kafka_test:29092 --timeout=60 --strict -- \
+      /usr/bin/wait-for-it.sh postgres_test:5432 --timeout=60 --strict -- \
+      pytest /app/tests/integration/test_kafka_integration.py /app/tests/e2e/test_full_pipeline.py"
     networks:
-      - kafka-network # O test-runner também precisa estar na rede kafka-network
+      - kafka-network_test # Conecta-se à rede de teste
+
+  # Serviço ZooKeeper para o ambiente de teste
+  zookeeper_test:
+    image: confluentinc/cp-zookeeper:7.3.0
+    container_name: zookeeper_test
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - kafka-network_test
+    healthcheck:
+      test: ["CMD-SHELL", "echo stat | nc localhost 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Serviço Kafka Broker para o ambiente de teste
+  kafka_test:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: kafka_test
+    depends_on:
+      zookeeper_test:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper_test:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka_test:29092 # Dentro da rede de teste
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - kafka-network_test
+    healthcheck:
+      test: ["CMD-SHELL", "/usr/bin/kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Serviço PostgreSQL para o ambiente de teste
+  postgres_test:
+    image: postgres:17
+    container_name: postgres_test
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: iot
+    networks:
+      - kafka-network_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d iot"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # Serviço Consumer para o ambiente de teste (se necessário para testes E2E)
+  viagem-consumer_test:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    environment:
+      POSTGRES_HOST: postgres_test
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: iot
+      KAFKA_BOOTSTRAP_SERVERS: kafka_test:29092
+    depends_on:
+      postgres_test:
+        condition: service_healthy
+      kafka_test:
+        condition: service_healthy
+    networks:
+      - kafka-network_test
+    restart: "no" # Para testes, geralmente queremos que ele rode e pare.
+
+  # Serviço Producer para o ambiente de teste (se necessário para testes E2E)
+  viagem-producer_test:
+    build:
+      context: .
+      dockerfile: Dockerfile.producer
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka_test:29092
+    depends_on:
+      kafka_test:
+        condition: service_healthy
+    networks:
+      - kafka-network_test
+    restart: "no" # Para testes, geralmente queremos que ele rode e pare.
+
+# Definição da rede exclusiva para o ambiente de teste
+networks:
+  kafka-network_test:
+    driver: bridge
